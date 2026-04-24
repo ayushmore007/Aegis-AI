@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+python-multipart
+pandas
+scikit-learn
+requests
+cryptography
+SpeechRecognition
+openai-whisper
+python-dotenv
