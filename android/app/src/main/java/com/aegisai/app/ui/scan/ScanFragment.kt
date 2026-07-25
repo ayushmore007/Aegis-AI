@@ -11,6 +11,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import com.aegisai.app.AegisApp
 import com.aegisai.app.data.ApiClient
 import com.aegisai.app.databinding.FragmentScanBinding
@@ -44,7 +45,7 @@ class ScanFragment : Fragment() {
 
         binding.profileBtn.text = if (!name.isNullOrBlank()) name.take(2).uppercase() else "ME"
         binding.profileBtn.setOnClickListener {
-            androidx.navigation.fragment.findNavController().navigate(R.id.action_scan_to_profile)
+            findNavController().navigate(R.id.action_scan_to_profile)
         }
 
         AnimUtil.fadeInUp(binding.scanTitle)
