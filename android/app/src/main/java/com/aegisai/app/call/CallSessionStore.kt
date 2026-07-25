@@ -5,6 +5,9 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import java.util.UUID
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 object CallSessionStore {
     private const val PREFS = "call_sessions"
@@ -40,7 +43,7 @@ object CallSessionStore {
         }
         persist(context, all.take(50))
 
-        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+        CoroutineScope(Dispatchers.IO).launch {
             com.aegisai.app.data.SessionHelper.syncHistoryWithCloud(context)
         }
     }

@@ -5,6 +5,9 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import java.util.UUID
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 object SmsStore {
     private const val PREFS = "sms_records"
@@ -38,7 +41,7 @@ object SmsStore {
         }
         persist(context, all.take(50)) // Keep last 50 SMS
 
-        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+        CoroutineScope(Dispatchers.IO).launch {
             com.aegisai.app.data.SessionHelper.syncHistoryWithCloud(context)
         }
     }
