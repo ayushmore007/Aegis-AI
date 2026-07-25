@@ -9,6 +9,7 @@ import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import com.aegisai.app.AegisApp
 import com.aegisai.app.R
 import com.aegisai.app.data.ApiClient
@@ -33,7 +34,14 @@ class EmailFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        api = ApiClient(AegisApp.get(requireContext()).prefs.apiBaseUrl)
+        val prefs = AegisApp.get(requireContext()).prefs
+        api = ApiClient(prefs.apiBaseUrl)
+        val name = prefs.username
+        binding.profileBtn.text = if (!name.isNullOrBlank()) name.take(2).uppercase() else "ME"
+        binding.profileBtn.setOnClickListener {
+            findNavController().navigate(R.id.action_email_to_profile)
+        }
+        AnimUtil.fadeInUp(binding.profileBtn)
 
         AnimUtil.fadeInUp(binding.credentialsCard)
         AnimUtil.fadeInUp(binding.emailInboxCard)

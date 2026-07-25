@@ -7,6 +7,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.aegisai.app.databinding.FragmentTrainingBinding
+import androidx.navigation.fragment.findNavController
+import com.aegisai.app.R
 
 class TrainingFragment : Fragment() {
     private var _binding: FragmentTrainingBinding? = null
@@ -46,6 +48,14 @@ class TrainingFragment : Fragment() {
         index = sp.getInt("idx", 0) % scenarios.size
         showScenario()
         updateXp()
+
+        val prefs = com.aegisai.app.AegisApp.get(requireContext()).prefs
+        val name = prefs.username
+        binding.profileBtn.text = if (!name.isNullOrBlank()) name.take(2).uppercase() else "ME"
+        binding.profileBtn.setOnClickListener {
+            findNavController().navigate(R.id.action_training_to_profile)
+        }
+        com.aegisai.app.util.AnimUtil.fadeInUp(binding.profileBtn)
 
         binding.scamBtn.setOnClickListener { answer(true) }
         binding.safeBtn.setOnClickListener { answer(false) }

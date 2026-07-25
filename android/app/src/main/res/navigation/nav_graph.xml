@@ -27,22 +27,54 @@
     <fragment
         android:id="@+id/vishingFragment"
         android:name="com.aegisai.app.ui.vishing.VishingFragment"
-        android:label="@string/nav_vishing" />
+        android:label="@string/nav_vishing">
+        <action
+            android:id="@+id/action_vishing_to_profile"
+            app:destination="@id/profileFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_left" />
+    </fragment>
 
     <fragment
         android:id="@+id/smsFragment"
         android:name="com.aegisai.app.ui.sms.SmsFragment"
-        android:label="@string/nav_sms" />
+        android:label="@string/nav_sms">
+        <action
+            android:id="@+id/action_sms_to_profile"
+            app:destination="@id/profileFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_left" />
+    </fragment>
 
     <fragment
         android:id="@+id/emailFragment"
         android:name="com.aegisai.app.ui.email.EmailFragment"
-        android:label="@string/nav_email" />
+        android:label="@string/nav_email">
+        <action
+            android:id="@+id/action_email_to_profile"
+            app:destination="@id/profileFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_left" />
+    </fragment>
 
     <fragment
         android:id="@+id/trainingFragment"
         android:name="com.aegisai.app.ui.training.TrainingFragment"
-        android:label="@string/nav_training" />
+        android:label="@string/nav_training">
+        <action
+            android:id="@+id/action_training_to_profile"
+            app:destination="@id/profileFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_left" />
+    </fragment>
 
     <fragment
         android:id="@+id/profileFragment"

@@ -20,6 +20,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import com.aegisai.app.AegisApp
 import com.aegisai.app.R
 import com.aegisai.app.data.ApiClient
@@ -54,6 +55,13 @@ class SmsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val prefs = AegisApp.get(requireContext()).prefs
+        val name = prefs.username
+        binding.profileBtn.text = if (!name.isNullOrBlank()) name.take(2).uppercase() else "ME"
+        binding.profileBtn.setOnClickListener {
+            findNavController().navigate(R.id.action_sms_to_profile)
+        }
+        AnimUtil.fadeInUp(binding.profileBtn)
 
         AnimUtil.fadeInUp(binding.permissionCard)
         AnimUtil.fadeInUp(binding.smsHistoryCard)

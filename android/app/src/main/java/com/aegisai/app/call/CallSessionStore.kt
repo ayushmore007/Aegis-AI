@@ -39,6 +39,10 @@ object CallSessionStore {
             all.add(0, session)
         }
         persist(context, all.take(50))
+
+        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+            com.aegisai.app.data.SessionHelper.syncHistoryWithCloud(context)
+        }
     }
 
     fun recentSessions(context: Context, limit: Int = 10): List<CallSession> =

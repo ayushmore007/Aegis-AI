@@ -37,6 +37,10 @@ object SmsStore {
             all.add(0, record)
         }
         persist(context, all.take(50)) // Keep last 50 SMS
+
+        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+            com.aegisai.app.data.SessionHelper.syncHistoryWithCloud(context)
+        }
     }
 
     fun recentRecords(context: Context, limit: Int = 10): List<SmsRecord> =
