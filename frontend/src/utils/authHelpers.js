@@ -24,7 +24,7 @@ export function getPostLoginPath(session, emailForVerify = '') {
   if (!isOAuthSession(session) && !isEmailVerified(session)) {
     return emailForVerify ? '/verify-email' : '/login';
   }
-  return '/config';
+  return '/home';
 }
 
 export function mapAuthError(message) {

@@ -68,4 +68,18 @@
     <string name="sms_grant_btn">Grant Permissions</string>
     <string name="sms_no_history">No recent messages scanned.</string>
     <string name="sms_history_title">Recent Scans</string>
+    <string name="nav_email">Email</string>
+    <string name="email_title">Email Shield</string>
+    <string name="email_subtitle">Connect your Gmail inbox to automatically scan recent emails for phishing.</string>
+    <string name="email_address_label">Gmail Address</string>
+    <string name="email_app_password_label">Google App Password</string>
+    <string name="email_fetch_btn">Fetch Recent Emails</string>
+    <string name="email_no_history">No recent emails fetched.</string>
+    <string name="email_recent_inbox">Recent Inbox</string>
+    <string name="email_scan_btn">Scan for Threats</string>
+    <string name="email_scanning">Scanning…</string>
+    <string name="email_risk">Risk: %1$s</string>
+    <string name="email_confidence">Confidence: %1$d%%</string>
+    <string name="email_reason_prefix">REASON: %1$s</string>
+    <string name="email_empty_fields">Please enter both email and app password</string>
 </resources>

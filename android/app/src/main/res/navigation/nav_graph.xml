@@ -28,6 +28,11 @@
         android:label="@string/nav_sms" />
 
     <fragment
+        android:id="@+id/emailFragment"
+        android:name="com.aegisai.app.ui.email.EmailFragment"
+        android:label="@string/nav_email" />
+
+    <fragment
         android:id="@+id/trainingFragment"
         android:name="com.aegisai.app.ui.training.TrainingFragment"
         android:label="@string/nav_training" />

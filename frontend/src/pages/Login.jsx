@@ -41,7 +41,7 @@ export default function Login({ isSignup }) {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: provider,
       options: {
-        redirectTo: `${window.location.origin}/config`,
+        redirectTo: `${window.location.origin}/home`,
       },
     });
     if (error) setErrorMsg(error.message);
@@ -127,7 +127,7 @@ export default function Login({ isSignup }) {
             .catch(() => null);
         }
 
-        navigate('/config');
+        navigate('/home');
       }
     }
     setLoading(false);

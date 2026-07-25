@@ -36,6 +36,22 @@ data class ProfileResponse(val user_id: String?, val phone: String?)
 @JsonClass(generateAdapter = true)
 data class OtpResponse(val ok: Boolean = false, val message: String? = null, val dev_otp: String? = null, val error: String? = null)
 
+@JsonClass(generateAdapter = true)
+data class GmailEmail(
+    val id: String,
+    val from: String?,
+    val subject: String?,
+    val body: String?,
+    val status: String? = null,
+    val result: ScanResult? = null
+)
+
+@JsonClass(generateAdapter = true)
+data class GmailFetchResponse(
+    val emails: List<GmailEmail>? = null,
+    val error: String? = null
+)
+
 class ApiClient(private val baseUrl: String) {
     private val client = OkHttpClient.Builder()
         .connectTimeout(60, TimeUnit.SECONDS)
@@ -66,7 +82,24 @@ class ApiClient(private val baseUrl: String) {
     private val scanAdapter = moshi.adapter(ScanResult::class.java)
     private val profileAdapter = moshi.adapter(ProfileResponse::class.java)
     private val otpAdapter = moshi.adapter(OtpResponse::class.java)
+    private val gmailFetchAdapter = moshi.adapter(GmailFetchResponse::class.java)
     private val jsonType = "application/json; charset=utf-8".toMediaType()
+
+    fun fetchGmailEmails(email: String, appPassword: String): GmailFetchResponse {
+        val json = org.json.JSONObject()
+            .put("email", email)
+            .put("app_password", appPassword)
+        val body = json.toString().toRequestBody(jsonType)
+        val req = Request.Builder().url("$baseUrl/api/gmail/fetch").post(body).build()
+        client.newCall(req).execute().use { resp ->
+            val jsonStr = resp.body?.string()?.takeIf { it.isNotBlank() } ?: "{}"
+            return try {
+                gmailFetchAdapter.fromJson(jsonStr) ?: GmailFetchResponse(error = "Invalid response format")
+            } catch (e: Exception) {
+                GmailFetchResponse(error = "Parsing error: ${e.message}")
+            }
+        }
+    }
 
     fun scanText(text: String, sender: String? = null): ScanResult {
         val json = org.json.JSONObject().put("text", text)

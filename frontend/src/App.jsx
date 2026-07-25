@@ -133,7 +133,7 @@ export default function App() {
           path="/config"
           element={
             <ProtectedRoute session={session}>
-              <Config />
+              <Navigate to="/home" replace />
             </ProtectedRoute>
           }
         />

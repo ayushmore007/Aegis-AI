@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'scan_screen.dart';
+import 'email_screen.dart';
 import 'vishing_screen.dart';
 import 'training_screen.dart';
 import 'profile_screen.dart';
@@ -17,6 +18,7 @@ class _MainLayoutState extends State<MainLayout> {
 
   final List<Widget> _screens = [
     const ScanScreen(),
+    const EmailScreen(),
     const VishingScreen(),
     const TrainingScreen(),
     const ProfileScreen(),
@@ -41,6 +43,7 @@ class _MainLayoutState extends State<MainLayout> {
         onTap: _onItemTapped,
         items: const [
           BottomNavigationBarItem(icon: Icon(LucideIcons.scan), label: 'Scan'),
+          BottomNavigationBarItem(icon: Icon(LucideIcons.mail), label: 'Email'),
           BottomNavigationBarItem(icon: Icon(LucideIcons.shieldAlert), label: 'Vishing'),
           BottomNavigationBarItem(icon: Icon(LucideIcons.gamepad2), label: 'Training'),
           BottomNavigationBarItem(icon: Icon(LucideIcons.user), label: 'Profile'),

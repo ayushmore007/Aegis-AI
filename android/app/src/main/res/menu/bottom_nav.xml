@@ -13,6 +13,10 @@
         android:icon="@drawable/ic_nav_sms"
         android:title="@string/nav_sms" />
     <item
+        android:id="@+id/emailFragment"
+        android:icon="@drawable/ic_nav_email"
+        android:title="@string/nav_email" />
+    <item
         android:id="@+id/trainingFragment"
         android:icon="@drawable/ic_nav_training"
         android:title="@string/nav_training" />

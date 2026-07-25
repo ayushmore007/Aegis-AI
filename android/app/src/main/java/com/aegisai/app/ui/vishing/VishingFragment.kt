@@ -27,6 +27,11 @@ import com.aegisai.app.data.ScanResult
 import com.aegisai.app.databinding.FragmentVishingBinding
 import com.aegisai.app.ui.call.CallAnalysisResultActivity
 import com.aegisai.app.util.AnimUtil
+import android.text.SpannableStringBuilder
+import android.text.Spanned
+import android.text.style.ForegroundColorSpan
+import android.text.style.StyleSpan
+import android.graphics.Typeface
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -229,9 +234,65 @@ class VishingFragment : Fragment() {
             return
         }
         binding.callHistoryCard.isVisible = true
-        binding.callHistoryList.text = sessions.joinToString("\n\n") { formatHistoryLine(it) }
+
+        val ssb = SpannableStringBuilder()
+        sessions.forEachIndexed { index, session ->
+            appendFormattedCallSession(ssb, session)
+            if (index < sessions.size - 1) {
+                ssb.append("\n\n")
+                ssb.append("─".repeat(30))
+                ssb.append("\n\n")
+            }
+        }
+        binding.callHistoryList.text = ssb
         binding.callHistoryList.setOnClickListener { openCallHistoryPicker() }
         binding.callHistoryCard.setOnClickListener { openCallHistoryPicker() }
+    }
+
+    private fun appendFormattedCallSession(ssb: SpannableStringBuilder, session: CallSession) {
+        val time = session.endedAt ?: session.startedAt
+        val formattedTime = android.text.format.DateFormat.format("MMM d, HH:mm", time).toString()
+
+        // Time + Phone number line
+        val headerStart = ssb.length
+        ssb.append("[$formattedTime] ")
+        ssb.append("Phone: ${session.phoneNumber ?: "Unknown"}")
+        ssb.setSpan(StyleSpan(Typeface.BOLD), headerStart, ssb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        ssb.append("\n")
+
+        // Risk line with color
+        val risk = session.result?.risk?.uppercase() ?: session.status.uppercase()
+        val conf = session.result?.confidence?.let { " (${(it * 100).toInt()}%)" } ?: ""
+        val riskStart = ssb.length
+        ssb.append("Risk: $risk$conf")
+
+        val riskColor = when (risk) {
+            "SCAM", "PHISHING", "HIGH" -> 0xFFEF4444.toInt() // Red
+            "SAFE", "LOW" -> 0xFF10B981.toInt() // Green
+            else -> 0xFFFBBF24.toInt() // Yellow/amber
+        }
+        ssb.setSpan(ForegroundColorSpan(riskColor), riskStart, ssb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        ssb.setSpan(StyleSpan(Typeface.BOLD), riskStart, ssb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+        // Reason line
+        session.result?.reason?.let { reason ->
+            if (reason.isNotBlank()) {
+                ssb.append("\n")
+                ssb.append(reason)
+            }
+        }
+
+        // Transcription preview
+        val transcription = session.result?.transcription ?: session.errorMessage
+        transcription?.let { text ->
+            if (text.isNotBlank()) {
+                ssb.append("\n")
+                val preview = if (text.length > 120) text.take(120) + "…" else text
+                val bodyStart = ssb.length
+                ssb.append(preview)
+                ssb.setSpan(ForegroundColorSpan(0xAA_FFFFFF.toInt()), bodyStart, ssb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            }
+        }
     }
 
     private fun openCallHistoryPicker() {

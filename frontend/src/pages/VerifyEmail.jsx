@@ -71,7 +71,7 @@ export default function VerifyEmail() {
     localStorage.setItem('aegis_user_email', email);
     localStorage.setItem('aegis_auth_method', 'email');
     setLoading(false);
-    navigate('/config', { replace: true });
+    navigate('/home', { replace: true });
   };
 
   const handleResend = async () => {
