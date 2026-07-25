@@ -42,7 +42,13 @@ class ScanFragment : Fragment() {
         val name = prefs.username
         binding.scanTitle.text = if (!name.isNullOrBlank()) "Welcome, $name" else "Scan Center"
 
+        binding.profileBtn.text = if (!name.isNullOrBlank()) name.take(2).uppercase() else "ME"
+        binding.profileBtn.setOnClickListener {
+            androidx.navigation.fragment.findNavController().navigate(R.id.action_scan_to_profile)
+        }
+
         AnimUtil.fadeInUp(binding.scanTitle)
+        AnimUtil.fadeInUp(binding.profileBtn)
         binding.root.findViewById<View>(R.id.scanResultCard)?.let { AnimUtil.fadeInUp(it) }
 
         binding.scanTextBtn.setOnClickListener {

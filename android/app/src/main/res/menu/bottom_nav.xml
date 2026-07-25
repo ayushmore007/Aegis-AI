@@ -20,8 +20,4 @@
         android:id="@+id/trainingFragment"
         android:icon="@drawable/ic_nav_training"
         android:title="@string/nav_training" />
-    <item
-        android:id="@+id/profileFragment"
-        android:icon="@drawable/ic_nav_profile"
-        android:title="@string/nav_profile" />
 </menu>
