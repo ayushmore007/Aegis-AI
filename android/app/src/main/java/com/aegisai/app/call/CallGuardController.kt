@@ -55,7 +55,7 @@ object CallGuardController {
         fallbackReceiver = IncomingCallReceiver()
         val filter = IntentFilter(TelephonyManager.ACTION_PHONE_STATE_CHANGED)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            appContext.registerReceiver(fallbackReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
+            appContext.registerReceiver(fallbackReceiver, filter, Context.RECEIVER_EXPORTED)
         } else {
             appContext.registerReceiver(fallbackReceiver, filter)
         }

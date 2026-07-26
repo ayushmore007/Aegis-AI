@@ -14,6 +14,8 @@ import com.aegisai.app.call.CallGuardCoordinator
 import com.aegisai.app.call.CallSession
 import com.aegisai.app.call.CallSessionStore
 import com.aegisai.app.databinding.ActivityCallAnalysisResultBinding
+import android.telephony.TelephonyManager
+import android.os.Build
 
 class CallAnalysisResultActivity : AppCompatActivity() {
     private lateinit var binding: ActivityCallAnalysisResultBinding
@@ -86,8 +88,28 @@ class CallAnalysisResultActivity : AppCompatActivity() {
         return recoverIfStale(session)
     }
 
-    /** Unstick sessions when the background service was killed mid-discovery. */
+    /** Unstick sessions when the background service was killed mid-discovery or call tracking was interrupted. */
     private fun recoverIfStale(session: CallSession): CallSession {
+        if (session.status == CallSession.STATUS_ACTIVE) {
+            val tm = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+            val phoneIdle = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                try { tm.callState == TelephonyManager.CALL_STATE_IDLE } catch (_: Exception) { true }
+            } else {
+                @Suppress("DEPRECATION")
+                tm.callState == TelephonyManager.CALL_STATE_IDLE
+            }
+            val elapsed = System.currentTimeMillis() - session.startedAt
+            if (phoneIdle || elapsed > 30 * 60 * 1000L) {
+                val updated = session.copy(
+                    status = CallSession.STATUS_FAILED,
+                    endedAt = System.currentTimeMillis(),
+                    errorMessage = "Call tracker was interrupted. Try picking the recording manually.",
+                )
+                CallSessionStore.saveSession(this, updated)
+                return updated
+            }
+        }
+
         if (session.status != CallSession.STATUS_DISCOVERING &&
             session.status != CallSession.STATUS_ANALYZING
         ) {

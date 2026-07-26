@@ -13,6 +13,7 @@ _TRUSTED_SENDER_FRAGMENTS = [
     "DTDC", "INDPOST", "NPCI", "UIDAI", "GOVTIN", "ITDEPT",
     "TRAI", "DOTGOI", "NSE", "BSE", "SEBI", "IRCTC", "OLACAB",
     "UBERIN", "RAPIDO", "DMART", "BIGBKT", "NYKAA", "LIC",
+    "NDMA", "GOVT",
 ]
 
 _TRUSTED_SENDER_RE = re.compile(

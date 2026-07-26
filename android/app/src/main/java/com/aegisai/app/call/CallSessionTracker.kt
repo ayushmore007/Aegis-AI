@@ -22,7 +22,7 @@ class CallSessionTracker private constructor(
     private fun register() {
         val filter = IntentFilter(TelephonyManager.ACTION_PHONE_STATE_CHANGED)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            appContext.registerReceiver(this, filter, Context.RECEIVER_NOT_EXPORTED)
+            appContext.registerReceiver(this, filter, Context.RECEIVER_EXPORTED)
         } else {
             appContext.registerReceiver(this, filter)
         }

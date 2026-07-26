@@ -55,7 +55,8 @@ _LEGIT_TRANSACTIONAL_PATTERNS = [
     r"\b(appointment|booking) (confirmed|reminder)\b",
     r"\b(flight|train|bus|cab)\b.{0,40}\b(confirmed|booked|scheduled)\b",
     r"\b(amazon|flipkart|swiggy|zomato|blinkit|myntra|meesho)\b.{0,50}\b(order|delivery|shipped)\b",
-    r"\b(weather|forecast|news alert)\b",
+    r"\b(weather|forecast|news alert|rain|rainfall|monsoon|storm|thunderstorm|lightning|warning|cyclone|flood|heavy rain|disaster|alert)\b",
+    r"(पुढील\s+\d+\s+तासात|पावसाची\s+शक्यता|मेघगर्जना|विजांच्या|पाऊस\s+पडण्याची|जोरदार\s+पाऊस|हवामान|अंदाज)",
     r"\b(thank you for|thanks for) (shopping|ordering|using|paying)\b",
     r"\bstatement (for|of)\b.{0,30}\b(account|card)\b",
     r"\b(minimum due|total due|amount due)\b.{0,40}\b(card|account)\b",
@@ -79,6 +80,7 @@ _LEGIT_TELECOM_PATTERNS = [
     r"\bairtel\.in\b",
     r"\bjio\.com\b",
     r"\bmyvi\.in\b",
+    r"\b(available to take calls|missed call alert|is now available|now available to take calls|missed call)\b",
     # Hindi / Hinglish carrier templates
     r"data.{0,30}(khatam|khatm|khatam ho|khatam ho gaya|use ho gaya|bacha|baki)",
     r"recharge.{0,30}(karo|kar lo|karein|abhi)",
