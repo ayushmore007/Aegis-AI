@@ -6,6 +6,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
+import com.aegisai.app.data.SessionHelper
 import com.aegisai.app.databinding.FragmentTrainingBinding
 import androidx.navigation.fragment.findNavController
 import com.aegisai.app.R
