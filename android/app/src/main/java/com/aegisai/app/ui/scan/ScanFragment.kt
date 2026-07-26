@@ -111,7 +111,7 @@ class ScanFragment : Fragment() {
 
     private fun copyUriToCache(uri: Uri): File? {
         return try {
-            val out = File(requireContext().cacheDir, "upload_${System.currentTimeMillis()}.m4a")
+            val out = File(requireContext().cacheDir, "upload_${java.util.UUID.randomUUID()}.m4a")
             requireContext().contentResolver.openInputStream(uri)?.use { input ->
                 out.outputStream().use { input.copyTo(it) }
             }

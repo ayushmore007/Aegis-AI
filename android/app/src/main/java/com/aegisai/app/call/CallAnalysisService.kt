@@ -38,7 +38,13 @@ class CallAnalysisService : Service() {
             return START_NOT_STICKY
         }
 
-        runningSessions.add(sessionId)
+        synchronized(runningSessions) {
+            if (runningSessions.contains(sessionId)) {
+                Log.w(TAG, "Session $sessionId is already running/analyzing. Ignoring duplicate start command.")
+                return START_NOT_STICKY
+            }
+            runningSessions.add(sessionId)
+        }
 
         when (intent.action) {
             ACTION_DISCOVER_AND_ANALYZE -> {
@@ -56,7 +62,9 @@ class CallAnalysisService : Service() {
                 scope.launch { analyzeSession(sessionId) }
             }
             else -> {
-                runningSessions.remove(sessionId)
+                synchronized(runningSessions) {
+                    runningSessions.remove(sessionId)
+                }
                 stopSelf()
             }
         }
@@ -270,7 +278,9 @@ class CallAnalysisService : Service() {
     }
 
     private fun finish(sessionId: String) {
-        runningSessions.remove(sessionId)
+        synchronized(runningSessions) {
+            runningSessions.remove(sessionId)
+        }
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
     }

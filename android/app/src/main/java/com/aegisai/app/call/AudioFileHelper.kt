@@ -9,7 +9,7 @@ object AudioFileHelper {
     fun copyUriToCache(context: Context, uri: Uri): File? {
         return try {
             val ext = extensionForUri(context, uri)
-            val out = File(context.cacheDir, "call_rec_${System.currentTimeMillis()}.$ext")
+            val out = File(context.cacheDir, "call_rec_${java.util.UUID.randomUUID()}.$ext")
             context.contentResolver.openInputStream(uri)?.use { input ->
                 out.outputStream().use { output -> input.copyTo(output) }
             } ?: return null

@@ -39,6 +39,10 @@ Here is a summary of the changes implemented to address high-accuracy transcript
 - **Whisper Preloader Startup Thread**: To avoid a 60+ second request hang when falling back to the local Whisper engine (due to loading the large Whisper model on demand), we added a startup event handler in **[main.py](file:///c:/Users/Ayush/Desktop/Aegis%20Ai/backend/main.py)** that preloads the Whisper model inside a background daemon thread right as the server boots up.
 - **Increased Android Client Timeout**: Increased the `readTimeout` and `writeTimeout` for `callGuardClient` in the Android app's **[ApiClient.kt](file:///c:/Users/Ayush/Desktop/Aegis%20Ai/android/app/src/main/java/com/aegisai/app/data/ApiClient.kt)** from 90 seconds to 180 seconds, ensuring it has ample time to complete even long-duration call scans.
 
+### 7. Concurrent Session & Cache Collision Mitigation
+- **UUID-based Cache Filenames**: Previously, both **[AudioFileHelper.kt](file:///c:/Users/Ayush/Desktop/Aegis%20Ai/android/app/src/main/java/com/aegisai/app/call/AudioFileHelper.kt)** and **[ScanFragment.kt](file:///c:/Users/Ayush/Desktop/Aegis%20Ai/android/app/src/main/java/com/aegisai/app/ui/scan/ScanFragment.kt)** generated cache filenames using `System.currentTimeMillis()`. When concurrent threads or duplicate service starts occurred in the same millisecond, they ended up writing to and reading from the exact same file path. When one thread completed and deleted the cache file in its `finally` block, the other thread crashed with an `ENOENT (No such file or directory)` error. We changed the temp filenames to use `UUID.randomUUID()` to guarantee uniqueness.
+- **Concurrent Duplicate Session Guard**: In **[CallAnalysisService.kt](file:///c:/Users/Ayush/Desktop/Aegis%20Ai/android/app/src/main/java/com/aegisai/app/call/CallAnalysisService.kt)**, added a thread-safe check inside `onStartCommand` to prevent launching duplicate analysis tasks if the `sessionId` is already being processed (contained in `runningSessions`).
+
 ---
 
 ## Verification Steps
