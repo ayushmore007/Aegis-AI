@@ -99,7 +99,7 @@ class CallAnalysisResultActivity : AppCompatActivity() {
                 tm.callState == TelephonyManager.CALL_STATE_IDLE
             }
             val elapsed = System.currentTimeMillis() - session.startedAt
-            if (phoneIdle || elapsed > 30 * 60 * 1000L) {
+            if ((phoneIdle && elapsed > 5 * 60 * 1000L) || elapsed > 30 * 60 * 1000L) {
                 val updated = session.copy(
                     status = CallSession.STATUS_FAILED,
                     endedAt = System.currentTimeMillis(),
