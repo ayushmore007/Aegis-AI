@@ -62,8 +62,8 @@ class ApiClient(private val baseUrl: String) {
     /** Call Guard: single upload + fast Google transcription on server. */
     private val callGuardClient = OkHttpClient.Builder()
         .connectTimeout(60, TimeUnit.SECONDS)
-        .readTimeout(90, TimeUnit.SECONDS)
-        .writeTimeout(90, TimeUnit.SECONDS)
+        .readTimeout(180, TimeUnit.SECONDS)
+        .writeTimeout(180, TimeUnit.SECONDS)
         .build()
 
     /** Website audio upload — may use Whisper fallback (slower). */

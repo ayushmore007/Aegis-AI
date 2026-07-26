@@ -65,6 +65,13 @@ class PhoneOtpVerifyRequest(BaseModel):
 _phone_otp_store: dict[str, tuple[str, float]] = {}
 
 
+@app.on_event("startup")
+async def startup_event():
+    import threading
+    from speech import preload_whisper_model
+    threading.Thread(target=preload_whisper_model, daemon=True).start()
+
+
 @app.get("/")
 def read_root():
     return {"status": "Aegis AI Backend is running securely."}

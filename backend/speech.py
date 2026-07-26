@@ -225,6 +225,46 @@ def _normalize_transcript(text: str) -> str:
     return t
 
 
+def _compress_for_gemini(wav_path: str, max_seconds: int | None = None) -> str:
+    """Compress audio to low-bitrate mono MP3 to minimize upload size and avoid timeouts."""
+    out_dir = tempfile.mkdtemp(prefix="aegis_gemini_")
+    compressed = os.path.join(out_dir, f"{uuid.uuid4().hex}.mp3")
+    cmd = [
+        _ffmpeg_executable(),
+        "-y",
+        "-i",
+        wav_path,
+        "-codec:a",
+        "libmp3lame",
+        "-b:a",
+        "32k",
+        "-ac",
+        "1",
+    ]
+    if max_seconds:
+        cmd += ["-t", str(max_seconds)]
+    cmd.append(compressed)
+    
+    try:
+        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+        if proc.returncode == 0 and os.path.isfile(compressed) and os.path.getsize(compressed) > MIN_AUDIO_BYTES:
+            return compressed
+    except Exception:
+        pass
+    
+    # Fallback to trim_wav_max_seconds if compression failed
+    if os.path.isfile(compressed):
+        try:
+            os.remove(compressed)
+        except OSError:
+            pass
+    try:
+        os.rmdir(out_dir)
+    except OSError:
+        pass
+    return trim_wav_max_seconds(wav_path, max_seconds) if max_seconds else wav_path
+
+
 def _gemini_transcribe(wav_path: str, max_seconds: int | None = None) -> tuple[str, str, str]:
     api_key = (os.getenv("GEMINI_API_KEY") or "").strip()
     if not api_key:
@@ -234,75 +274,76 @@ def _gemini_transcribe(wav_path: str, max_seconds: int | None = None) -> tuple[s
     import requests
     import json
 
-    work = trim_wav_max_seconds(wav_path, max_seconds) if max_seconds else wav_path
-
-    with open(work, "rb") as f:
-        audio_data = f.read()
-
-    encoded_audio = base64.b64encode(audio_data).decode("utf-8")
-
-    mime_type = "audio/wav"
-    if work.lower().endswith(".mp3"):
-        mime_type = "audio/mp3"
-    elif work.lower().endswith(".m4a"):
-        mime_type = "audio/m4a"
-    elif work.lower().endswith(".ogg"):
-        mime_type = "audio/ogg"
-
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
-    headers = {"Content-Type": "application/json"}
-
-    prompt = (
-        "You are an expert audio transcriber. Transcribe this audio recording of a phone call. "
-        "The call might be in English, Hindi, Marathi, Tamil, Telugu, Bengali, or a mix of these (e.g. Hinglish). "
-        "Provide a highly accurate transcription and translation in the required JSON format."
-    )
-
-    payload = {
-        "contents": [
-            {
-                "parts": [
-                    {
-                        "inline_data": {
-                            "mime_type": mime_type,
-                            "data": encoded_audio
-                        }
-                    },
-                    {
-                        "text": prompt
-                    }
-                ]
-            }
-        ],
-        "generationConfig": {
-            "temperature": 0.0,
-            "responseMimeType": "application/json",
-            "responseSchema": {
-                "type": "OBJECT",
-                "properties": {
-                    "transcription": {
-                        "type": "STRING",
-                        "description": "Verbatim transcription in the original language(s) spoken."
-                    },
-                    "translation": {
-                        "type": "STRING",
-                        "description": "Accurate English translation of the transcription. If the spoken language is English, this should match the transcription."
-                    },
-                    "language": {
-                        "type": "STRING",
-                        "description": "Detected language (e.g., 'English', 'Hindi', 'Hinglish', 'Marathi', etc.)."
-                    }
-                },
-                "required": ["transcription", "translation", "language"]
-            }
-        }
-    }
-
-    response = requests.post(url, headers=headers, json=payload, timeout=60)
-    response.raise_for_status()
-    resp_json = response.json()
+    work = _compress_for_gemini(wav_path, max_seconds)
+    created_compressed = work != wav_path
 
     try:
+        with open(work, "rb") as f:
+            audio_data = f.read()
+
+        encoded_audio = base64.b64encode(audio_data).decode("utf-8")
+
+        mime_type = "audio/wav"
+        if work.lower().endswith(".mp3"):
+            mime_type = "audio/mp3"
+        elif work.lower().endswith(".m4a"):
+            mime_type = "audio/m4a"
+        elif work.lower().endswith(".ogg"):
+            mime_type = "audio/ogg"
+
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+        headers = {"Content-Type": "application/json"}
+
+        prompt = (
+            "You are an expert audio transcriber. Transcribe this audio recording of a phone call. "
+            "The call might be in English, Hindi, Marathi, Tamil, Telugu, Bengali, or a mix of these (e.g. Hinglish). "
+            "Provide a highly accurate transcription and translation in the required JSON format."
+        )
+
+        payload = {
+            "contents": [
+                {
+                    "parts": [
+                        {
+                            "inline_data": {
+                                "mime_type": mime_type,
+                                "data": encoded_audio
+                            }
+                        },
+                        {
+                            "text": prompt
+                        }
+                    ]
+                }
+            ],
+            "generationConfig": {
+                "temperature": 0.0,
+                "responseMimeType": "application/json",
+                "responseSchema": {
+                    "type": "OBJECT",
+                    "properties": {
+                        "transcription": {
+                            "type": "STRING",
+                            "description": "Verbatim transcription in the original language(s) spoken."
+                        },
+                        "translation": {
+                            "type": "STRING",
+                            "description": "Accurate English translation of the transcription. If the spoken language is English, this should match the transcription."
+                        },
+                        "language": {
+                            "type": "STRING",
+                            "description": "Detected language (e.g., 'English', 'Hindi', 'Hinglish', 'Marathi', etc.)."
+                        }
+                    },
+                    "required": ["transcription", "translation", "language"]
+                }
+            }
+        }
+
+        response = requests.post(url, headers=headers, json=payload, timeout=60)
+        response.raise_for_status()
+        resp_json = response.json()
+
         content_text = resp_json["candidates"][0]["content"]["parts"][0]["text"].strip()
         result = json.loads(content_text)
         transcription = result.get("transcription", "").strip()
@@ -317,7 +358,29 @@ def _gemini_transcribe(wav_path: str, max_seconds: int | None = None) -> tuple[s
 
         return text_to_return, method, lang_key
     except Exception as e:
-        raise ValueError(f"Gemini transcription parsing failed: {e}")
+        raise ValueError(f"Gemini transcription failed: {e}")
+    finally:
+        if created_compressed and work and os.path.isfile(work):
+            try:
+                parent = os.path.dirname(work)
+                os.remove(work)
+                if parent and os.path.isdir(parent) and "aegis_gemini_" in parent:
+                    os.rmdir(parent)
+            except OSError:
+                pass
+
+
+def preload_whisper_model():
+    global _whisper_model
+    try:
+        if (os.getenv("CALL_GUARD_WHISPER_FALLBACK", "true").lower() in ("1", "true", "yes")):
+            import whisper
+            model_name = os.getenv("WHISPER_MODEL", "base")
+            print(f"Preloading Whisper model '{model_name}'...")
+            _whisper_model = whisper.load_model(model_name)
+            print("Whisper model preloaded successfully!")
+    except Exception as e:
+        print(f"Failed to preload Whisper: {e}")
 
 
 def _whisper_transcribe(wav_path: str, max_seconds: int | None = None) -> tuple[str, str, str]:
