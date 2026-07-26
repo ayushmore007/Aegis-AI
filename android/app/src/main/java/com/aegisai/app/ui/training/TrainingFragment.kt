@@ -79,6 +79,11 @@ class TrainingFragment : Fragment() {
         val sp = requireContext().getSharedPreferences("aegis_training", Context.MODE_PRIVATE)
         sp.edit().putInt("xp", xp).putInt("idx", index).apply()
         updateXp()
+        lifecycleScope.launch {
+            try {
+                SessionHelper.syncHistoryWithCloud(requireContext())
+            } catch (_: Exception) {}
+        }
         binding.root.postDelayed({ showScenario() }, 1200)
     }
 

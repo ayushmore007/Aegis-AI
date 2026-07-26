@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { ShieldAlert, CheckCircle, FileAudio, AlertTriangle } from 'lucide-react';
 import { playSound } from '../utils/audio';
 import { apiUrl } from '../lib/api';
+import { pushLocalDataToCloud } from '../utils/userStorage';
 
 async function parseApiJson(response) {
   const raw = await response.text();
@@ -70,6 +71,7 @@ export default function Home() {
       };
       const existing = JSON.parse(localStorage.getItem('aegis_scan_history') || '[]');
       localStorage.setItem('aegis_scan_history', JSON.stringify([safeData, ...existing]));
+      pushLocalDataToCloud().catch(() => null);
 
     } catch (err) {
       console.error(err);
@@ -133,6 +135,7 @@ export default function Home() {
       };
       const existing = JSON.parse(localStorage.getItem('aegis_scan_history') || '[]');
       localStorage.setItem('aegis_scan_history', JSON.stringify([safeData, ...existing]));
+      pushLocalDataToCloud().catch(() => null);
 
     } catch (err) {
       console.error(err);

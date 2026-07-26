@@ -105,9 +105,6 @@ class ScanFragment : Fragment() {
             sb.append(it)
             sb.append("\n")
         }
-        result.detected_keywords?.takeIf { it.isNotEmpty() }?.let {
-            sb.append("\nKeywords: ${it.joinToString()}")
-        }
         binding.scanResult.text = sb.toString()
         result.transcription?.let { binding.scanInput.setText(it) }
     }

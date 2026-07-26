@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Shield, Flame, Award, Clock, History, X, Info } from 'lucide-react';
 import { scenariosSet1, scenariosSet2, scenariosSet3 } from '../data/scenarios';
 import { decodeScenarioSet } from '../data/scenarioCodec';
+import { pushLocalDataToCloud } from '../utils/userStorage';
 
 const sets = [
   decodeScenarioSet(scenariosSet1),
@@ -43,6 +44,10 @@ export default function Simulate() {
   const allScenarios = sets[setIndex % sets.length];
   const currentRank = getRankFromXp(xp);
   const isComplete = globalIndex >= allScenarios.length;
+
+  useEffect(() => {
+    pushLocalDataToCloud().catch(() => null);
+  }, [globalIndex, history, streak, xp, setIndex]);
   const currentScenario = isComplete ? null : allScenarios[globalIndex];
 
   // Timer Logic

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Mail, ShieldAlert, CheckCircle, AlertTriangle, RefreshCw, ChevronDown, ChevronUp, Link as LinkIcon, Key, Lock, Eye, EyeOff, HelpCircle } from 'lucide-react';
 import { apiUrl } from '../lib/api';
+import { pushLocalDataToCloud } from '../utils/userStorage';
 
 
 
@@ -135,6 +136,7 @@ export default function EmailScanner() {
           };
           const existing = JSON.parse(localStorage.getItem('aegis_scan_history') || '[]');
           localStorage.setItem('aegis_scan_history', JSON.stringify([safeData, ...existing]));
+          pushLocalDataToCloud().catch(() => null);
         } catch (e) {
           console.error("Failed to save to history", e);
         }

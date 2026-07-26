@@ -99,6 +99,9 @@ class VerifyPhoneActivity : AppCompatActivity() {
                 prefs.phoneVerified = true
                 prefs.phoneVerificationSkipped = false
                 Toast.makeText(this@VerifyPhoneActivity, "Mobile verified", Toast.LENGTH_SHORT).show()
+                try {
+                    SessionHelper.syncHistoryWithCloud(this@VerifyPhoneActivity)
+                } catch (_: Exception) {}
                 goMain()
             } catch (e: Exception) {
                 Toast.makeText(this@VerifyPhoneActivity, e.message ?: "Verification failed", Toast.LENGTH_LONG).show()

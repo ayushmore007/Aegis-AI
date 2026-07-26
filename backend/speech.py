@@ -225,6 +225,101 @@ def _normalize_transcript(text: str) -> str:
     return t
 
 
+def _gemini_transcribe(wav_path: str, max_seconds: int | None = None) -> tuple[str, str, str]:
+    api_key = (os.getenv("GEMINI_API_KEY") or "").strip()
+    if not api_key:
+        raise ValueError("GEMINI_API_KEY not configured")
+
+    import base64
+    import requests
+    import json
+
+    work = trim_wav_max_seconds(wav_path, max_seconds) if max_seconds else wav_path
+
+    with open(work, "rb") as f:
+        audio_data = f.read()
+
+    encoded_audio = base64.b64encode(audio_data).decode("utf-8")
+
+    mime_type = "audio/wav"
+    if work.lower().endswith(".mp3"):
+        mime_type = "audio/mp3"
+    elif work.lower().endswith(".m4a"):
+        mime_type = "audio/m4a"
+    elif work.lower().endswith(".ogg"):
+        mime_type = "audio/ogg"
+
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+    headers = {"Content-Type": "application/json"}
+
+    prompt = (
+        "You are an expert audio transcriber. Transcribe this audio recording of a phone call. "
+        "The call might be in English, Hindi, Marathi, Tamil, Telugu, Bengali, or a mix of these (e.g. Hinglish). "
+        "Provide a highly accurate transcription and translation in the required JSON format."
+    )
+
+    payload = {
+        "contents": [
+            {
+                "parts": [
+                    {
+                        "inline_data": {
+                            "mime_type": mime_type,
+                            "data": encoded_audio
+                        }
+                    },
+                    {
+                        "text": prompt
+                    }
+                ]
+            }
+        ],
+        "generationConfig": {
+            "temperature": 0.0,
+            "responseMimeType": "application/json",
+            "responseSchema": {
+                "type": "OBJECT",
+                "properties": {
+                    "transcription": {
+                        "type": "STRING",
+                        "description": "Verbatim transcription in the original language(s) spoken."
+                    },
+                    "translation": {
+                        "type": "STRING",
+                        "description": "Accurate English translation of the transcription. If the spoken language is English, this should match the transcription."
+                    },
+                    "language": {
+                        "type": "STRING",
+                        "description": "Detected language (e.g., 'English', 'Hindi', 'Hinglish', 'Marathi', etc.)."
+                    }
+                },
+                "required": ["transcription", "translation", "language"]
+            }
+        }
+    }
+
+    response = requests.post(url, headers=headers, json=payload, timeout=60)
+    response.raise_for_status()
+    resp_json = response.json()
+
+    try:
+        content_text = resp_json["candidates"][0]["content"]["parts"][0]["text"].strip()
+        result = json.loads(content_text)
+        transcription = result.get("transcription", "").strip()
+        translation = result.get("translation", "").strip()
+        lang = result.get("language", "").strip()
+
+        text_to_return = translation or transcription
+        method = f"Gemini 1.5 Flash ({lang})"
+
+        from language_utils import normalize_stt_language
+        lang_key = normalize_stt_language(lang, text_to_return)
+
+        return text_to_return, method, lang_key
+    except Exception as e:
+        raise ValueError(f"Gemini transcription parsing failed: {e}")
+
+
 def _whisper_transcribe(wav_path: str, max_seconds: int | None = None) -> tuple[str, str, str]:
     global _whisper_model
     import whisper
@@ -366,6 +461,15 @@ def process_audio(audio_file_path: str, fast: bool = False):
         validate_audio_file(audio_file_path)
         wav_path = convert_to_wav(audio_file_path)
         created_wav = wav_path != audio_file_path
+
+        if (os.getenv("GEMINI_API_KEY") or "").strip():
+            try:
+                max_sec = int(os.getenv("CALL_GUARD_MAX_AUDIO_SEC", "120")) if fast else None
+                text, method, lang = _gemini_transcribe(wav_path, max_seconds=max_sec)
+                if text:
+                    return text, method, lang
+            except Exception as e:
+                print(f"Gemini transcription failed, falling back: {e}")
 
         if fast:
             max_sec = int(os.getenv("CALL_GUARD_MAX_AUDIO_SEC", "120"))

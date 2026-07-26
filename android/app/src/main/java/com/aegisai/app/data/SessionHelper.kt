@@ -28,9 +28,17 @@ object SessionHelper {
             ?: email?.substringBefore("@")?.replaceFirstChar { it.uppercase() }
         if (name != null) prefs.username = name
 
+        val phone = meta?.optString("phone")?.takeIf { it.isNotBlank() }
+        if (phone != null) {
+            prefs.phone = phone
+            prefs.phoneVerified = meta.optBoolean("phone_verified", false)
+        }
+
         // Restore/Merge history from cloud
         val cloudCalls = meta?.optString("call_history")
         val cloudSms = meta?.optString("sms_history")
+        val cloudXp = meta?.optInt("training_xp", 0) ?: 0
+        val cloudIdx = meta?.optInt("training_idx", 0) ?: 0
         var mergedAny = false
 
         if (!cloudCalls.isNullOrBlank()) {
@@ -39,6 +47,17 @@ object SessionHelper {
         }
         if (!cloudSms.isNullOrBlank()) {
             mergeHistory(context, "sms_records", "records_json", cloudSms, "id", "timestamp")
+            mergedAny = true
+        }
+
+        val trainingSp = context.getSharedPreferences("aegis_training", android.content.Context.MODE_PRIVATE)
+        val localXp = trainingSp.getInt("xp", 0)
+        val localIdx = trainingSp.getInt("idx", 0)
+        if (cloudXp > localXp || cloudIdx > localIdx) {
+            trainingSp.edit()
+                .putInt("xp", maxOf(localXp, cloudXp))
+                .putInt("idx", maxOf(localIdx, cloudIdx))
+                .apply()
             mergedAny = true
         }
 
@@ -59,11 +78,19 @@ object SessionHelper {
             .getString("sessions_json", "[]") ?: "[]"
         val localSms = context.getSharedPreferences("sms_records", android.content.Context.MODE_PRIVATE)
             .getString("records_json", "[]") ?: "[]"
+        val trainingSp = context.getSharedPreferences("aegis_training", android.content.Context.MODE_PRIVATE)
+        val localXp = trainingSp.getInt("xp", 0)
+        val localIdx = trainingSp.getInt("idx", 0)
 
         try {
             val payload = JSONObject().put("data", JSONObject()
                 .put("call_history", localCalls)
                 .put("sms_history", localSms)
+                .put("training_xp", localXp)
+                .put("training_idx", localIdx)
+                .put("phone", prefs.phone ?: "")
+                .put("phone_verified", prefs.phoneVerified)
+                .put("username", prefs.username ?: "")
             )
             val req = Request.Builder()
                 .url("${BuildConfig.SUPABASE_URL.trimEnd('/')}/auth/v1/user")

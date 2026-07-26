@@ -117,6 +117,7 @@ class LoginActivity : AppCompatActivity() {
                 if (!isEmailVerified()) {
                     goVerifyEmail(email, prefs.username)
                 } else {
+                    SessionHelper.refreshUserFromToken(this@LoginActivity)
                     routeAfterAuth()
                 }
             } catch (e: Exception) {
@@ -194,17 +195,7 @@ class LoginActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             setLoading(loading = true)
-            val user = SessionHelper.fetchUser(access)
-            val email = user?.optString("email").orEmpty()
-            if (email.isNotBlank()) prefs.email = email
-            val meta = user?.optJSONObject("user_metadata")
-            prefs.username = meta?.optString("username")?.takeIf { it.isNotBlank() }
-                ?: meta?.optString("full_name")?.takeIf { it.isNotBlank() }
-                ?: email.substringBefore("@").replaceFirstChar { it.uppercase() }
-            meta?.optString("phone")?.takeIf { it.isNotBlank() }?.let {
-                prefs.phone = it
-                prefs.phoneVerified = true
-            }
+            SessionHelper.refreshUserFromToken(this@LoginActivity)
             setLoading(loading = false)
             routeAfterAuth()
         }

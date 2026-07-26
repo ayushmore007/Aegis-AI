@@ -60,13 +60,6 @@ export default function History() {
                         {item.confidence !== undefined && item.confidence !== null ? `${(item.confidence * 100).toFixed(1)}%` : 'N/A'}
                       </div>
                     </div>
-                    
-                    {item.detected_keywords && item.detected_keywords.length > 0 && (
-                      <div style={{ background: 'rgba(255,255,255,0.02)', padding: '12px', borderRadius: '8px' }}>
-                        <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '4px' }}>Flags Triggered</div>
-                        <div style={{ fontWeight: 600, color: '#e2e8f0' }}>{item.detected_keywords.join(', ')}</div>
-                      </div>
-                    )}
                   </div>
 
                   {item.suspicious_links && item.suspicious_links.length > 0 && (

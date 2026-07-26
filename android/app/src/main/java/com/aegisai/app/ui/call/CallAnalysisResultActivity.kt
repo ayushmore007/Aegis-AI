@@ -230,10 +230,6 @@ class CallAnalysisResultActivity : AppCompatActivity() {
                 append("\n")
                 append(it)
             }
-            result.detected_keywords?.takeIf { it.isNotEmpty() }?.let {
-                append("\n\nKeywords: ")
-                append(it.joinToString())
-            }
         }
     }
 

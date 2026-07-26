@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getRankFromXp } from './Simulate';
 import { apiUrl } from '../lib/api';
-import { getStoredUsername, getStoredEmail, getEmailLocalPart } from '../utils/userStorage';
+import { getStoredUsername, getStoredEmail, getEmailLocalPart, pushLocalDataToCloud } from '../utils/userStorage';
 
 const QUICK_TEST_PRESETS = [
   {
@@ -166,6 +166,7 @@ export default function Dashboard() {
         // Verified! Save phone
         localStorage.setItem('aegis_user_phone', phone);
         localStorage.setItem('aegis_phone_verified', 'true');
+        pushLocalDataToCloud().catch(() => null);
         setProfile(prev => ({ ...prev, phone }));
         setPhoneVerified(true);
         setPhoneStep('idle');
