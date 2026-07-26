@@ -228,6 +228,14 @@ class CallAnalysisService : Service() {
         } finally {
             pendingLearnedData.remove(sessionId)
             cacheFile?.delete()
+            if (uriString != null && uriString.startsWith("file:///")) {
+                try {
+                    val file = File(android.net.Uri.parse(uriString).path ?: "")
+                    if (file.exists() && file.absolutePath.contains(appContext.cacheDir.absolutePath)) {
+                        file.delete()
+                    }
+                } catch (_: Exception) {}
+            }
             finish(sessionId)
         }
     }

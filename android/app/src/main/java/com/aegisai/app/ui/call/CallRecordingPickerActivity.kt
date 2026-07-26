@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import com.aegisai.app.call.AudioFileHelper
 import com.aegisai.app.call.CallAnalysisNotifier
 import com.aegisai.app.call.CallGuardCoordinator
 
@@ -18,7 +19,14 @@ class CallRecordingPickerActivity : AppCompatActivity() {
             finish()
             return@registerForActivityResult
         }
-        CallGuardCoordinator.analyzeManualRecording(this, sessionId, uri)
+        val cacheFile = AudioFileHelper.copyUriToCache(this, uri)
+        if (cacheFile == null) {
+            Toast.makeText(this, "Could not read the selected file", Toast.LENGTH_SHORT).show()
+            finish()
+            return@registerForActivityResult
+        }
+        val fileUri = Uri.fromFile(cacheFile)
+        CallGuardCoordinator.analyzeManualRecording(this, sessionId, fileUri)
         Toast.makeText(this, com.aegisai.app.R.string.call_guard_manual_upload_started, Toast.LENGTH_SHORT).show()
         startActivity(CallAnalysisResultActivity.intent(this, sessionId))
         finish()
